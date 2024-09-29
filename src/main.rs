@@ -2,7 +2,8 @@ mod geometrical_shapes;
 
 use geometrical_shapes as gs;
 use gs::{Drawable};
-use raster::{Image};
+use raster::{Color, Image};
+use crate::geometrical_shapes::Displayable;
 
 fn main() {
     let mut image = Image::blank(1000, 1000);
@@ -21,9 +22,24 @@ fn main() {
     );
     triangle.draw(&mut image);
 
+    // Circle
     for _ in 1..50 {
         gs::Circle::random(image.width, image.height).draw(&mut image);
     }
 
+    // Ptentgon
+    for _ in 1..10 {
+        gs::Pentagon::random(image.width, image.height).draw(&mut image);
+    }
+
     raster::save(&image, "image.png").unwrap();
+}
+
+#[allow(dead_code)]
+impl Displayable for Image {
+    fn display(&mut self, x: i32, y: i32, color: Color) {
+        if x >= 0 && x < self.width && y >= 0 && y < self.height {
+            self.set_pixel(x, y, color).unwrap();
+        }
+    }
 }

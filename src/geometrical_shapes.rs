@@ -1,13 +1,14 @@
 use rand::Rng;
 use std::cmp::min;
+use std::f64::consts::PI;
 use raster::{Color, Image};
 
 // ============================ GLOBAL METHODS ====================
 pub fn random_rgb_color() -> Color {
     let mut rng = rand::thread_rng();
-    let r = rng.gen_range(0..=255);
-    let g = rng.gen_range(0..=255);
-    let b = rng.gen_range(0..=255);
+    let r: u8 = rng.gen_range(0..=255);
+    let g: u8 = rng.gen_range(0..=255);
+    let b: u8 = rng.gen_range(0..=255);
     Color::rgb(r, g, b)
 }
 
@@ -23,17 +24,8 @@ pub trait Displayable {
     fn display(&mut self, x: i32, y: i32, color: Color);
 }
 
-#[allow(dead_code)]
-impl Displayable for Image {
-    fn display(&mut self, x: i32, y: i32, color: Color) {
-        if x >= 0 && x < self.width && y >= 0 && y < self.height {
-            self.set_pixel(x, y, color).unwrap();
-        }
-    }
-}
-
-// ============================ STRUCT POINT ============================
-#[derive(Clone)]
+// ============================ STRUCT POINT ======================
+#[derive(Debug, Clone)]
 pub struct Point {
     x: i32,
     y: i32,
@@ -60,13 +52,12 @@ impl Drawable for Point {
     }
 
     fn color(&self) -> Color {
-        // Color::rgb(0, 255, 0)
         random_rgb_color()
     }
 }
 
-// ============================ STRUCT LINE ============================
-#[derive(Clone)]
+// ============================ STRUCT LINE =======================
+#[derive(Debug, Clone)]
 pub struct Line {
     start: Point,
     end: Point,
@@ -118,12 +109,11 @@ impl Drawable for Line {
 
     fn color(&self) -> Color {
         Color::rgb(255, 255, 255)
-        // random_rgb_color()
     }
 }
 
-// ============================ STRUCT RECTANGLE ============================
-#[derive(Clone)]
+// ============================ STRUCT RECTANGLE ==================
+#[derive(Debug, Clone)]
 pub struct Rectangle {
     top_left: Point,
     bottom_right: Point,
@@ -152,13 +142,12 @@ impl Drawable for Rectangle {
     }
 
     fn color(&self) -> Color {
-        // Color::rgb(0, 0, 255)
         random_rgb_color()
     }
 }
 
-// ============================ STRUCT TRIANGLE ============================
-#[derive(Clone)]
+// ============================ STRUCT TRIANGLE ===================
+#[derive(Debug, Clone)]
 pub struct Triangle {
     a: Point,
     b: Point,
@@ -185,13 +174,12 @@ impl Drawable for Triangle {
     }
 
     fn color(&self) -> Color {
-        // Color::rgb(255, 255, 0)
-        random_rgb_color()
+        Color::rgb(0, 0, 255)
     }
 }
 
-// ============================ STRUCT CIRCLE ============================
-#[derive(Clone)]
+// ============================ STRUCT CIRCLE =====================
+#[derive(Debug, Clone)]
 pub struct Circle {
     center: Point,
     radius: i32,
@@ -243,7 +231,54 @@ impl Drawable for Circle {
     }
 
     fn color(&self) -> Color {
-        // Color::rgb(255, 0, 0)
+        random_rgb_color()
+    }
+}
+
+// ============================ BONUS PENTAGONE ====================
+#[derive(Debug, Clone)]
+pub struct Pentagon {
+    center: Point,
+    radius: i32,
+}
+
+#[allow(dead_code)]
+impl Pentagon {
+    pub fn new(center: &Point, radius: i32) -> Self {
+        Pentagon {
+            center: center.clone(),
+            radius,
+        }
+    }
+
+    pub fn random(width: i32, height: i32) -> Self {
+        let center = Point::random(width, height);
+        let radius = rand::thread_rng().gen_range(10..=min(width, height) / 5);
+        Pentagon { center, radius }
+    }
+}
+
+#[allow(dead_code)]
+impl Drawable for Pentagon {
+    fn draw(&self, image: &mut Image) {
+        let mut vec = Vec::new();
+        let sides: i32 = 5;
+
+        for i in 0..sides {
+            let angle = 2.0 * PI * (i as f64) / 5.0 - PI / 2.0;
+            let x = self.center.x + (self.radius as f64 * angle.cos()) as i32;
+            let y = self.center.y + (self.radius as f64 * angle.sin()) as i32;
+            vec.push(Point::new(x, y));
+        }
+
+        for i in 0..sides {
+            let start = &vec[i as usize];
+            let end = &vec[(i + 1) as usize % sides as usize];
+            Line::new(start, end).draw(image);
+        }
+    }
+
+    fn color(&self) -> Color {
         random_rgb_color()
     }
 }

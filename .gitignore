@@ -4,3 +4,4 @@ samples.md
 .vscode
 git.sh
 *.png
+Cargo.lock
